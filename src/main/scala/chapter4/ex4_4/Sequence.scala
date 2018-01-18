@@ -10,5 +10,4 @@ object Sequence {
   def sequence[A](a: List[Option[A]]): Option[List[A]] =
     a.foldRight(ex4_1.Some(List.empty[A]): Option[List[A]])(Map2.map2(_, _)(_ :: _))
 
-
 }
