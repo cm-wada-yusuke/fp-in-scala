@@ -1,7 +1,5 @@
 package chapter4
 
-import java.awt.image.RGBImageFilter
-
 import chapter4.ex4_4.Sequence
 import chapter4.ex4_5.Traverse
 import chapter4.ex4_7.SequenceTraverse
@@ -27,6 +25,14 @@ class Chapter4Test extends FlatSpec with Matchers {
     sut.filter(_ % 2 == 0) shouldEqual sut
     sut.filter(_ % 2 != 0) shouldEqual None
   }
+
+  "ex42" should "output" in {
+    val sut = List(Some(10), Some(11), Some(12))
+
+    Sequence.sequence(sut) shouldEqual Some(List(10, 11, 12))
+
+  }
+
 
   "ex44" should "output" in {
     val sut = List(Some(10), Some(11), Some(12))

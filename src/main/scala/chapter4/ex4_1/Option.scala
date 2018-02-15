@@ -21,11 +21,18 @@ sealed trait Option[+A] {
     case None => ob
   }
 
+  // match 使っちゃった
+//  def orElse2[B >: A](ob: => Option[B]): Option[B] =
+//    this.flatMap(Some(_):Option[B]).getOrElse(ob)
+
+
   // パターンマッチ使っちゃった
   def filter(f: A => Boolean): Option[A] = this match {
     case Some(a) if f(a) => this
     case _ => None
   }
+
+  def filter2(f: A => Boolean): Option[A] = this.flatMap(a => if (f(a)) this else None)
 
 }
 
