@@ -1,5 +1,7 @@
 package chapter5
 
+import scala.annotation.tailrec
+
 trait Stream[+A] {
   def headOption: Option[A] = this match {
     case Empty => None
@@ -63,8 +65,13 @@ trait Stream[+A] {
   def filter(f: (A => Boolean)): Stream[A] =
     foldRight(Stream.empty[A])((a, b) => if (f(a)) Stream.cons(a, b) else b)
 
-  def append = ???
-  def flatMap = ???
+  def append[X >: A](x: Stream[X]): Stream[X] =
+    foldRight(x)((a, b) => Stream.cons(a, b))
+
+
+  // foldRight を二回やってるので効率が残念なことになってそう。でもappend使う以外思いつかない
+  def flatMap[B](f: (A => Stream[B])): Stream[B] =
+    foldRight(Stream.empty[B])(f(_).append(_))
 
 }
 

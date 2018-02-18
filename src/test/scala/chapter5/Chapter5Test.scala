@@ -17,6 +17,7 @@ class Chapter5Test extends FlatSpec with Matchers {
     val sut = Stream(1, 2, 3, 4, 5)
 
     sut.take(3).toList shouldEqual Stream(1, 2, 3).toList
+    sut.take(1).toList shouldEqual Stream(1).toList
     sut.drop(3).toList shouldEqual Stream(4, 5).toList
   }
 
@@ -50,6 +51,8 @@ class Chapter5Test extends FlatSpec with Matchers {
 
     sut.map(_ * 2).toList shouldEqual List(2, 4, 6, 8, 10)
     sut.filter(_ % 2 == 0).toList shouldEqual List(2, 4)
+    sut.append(Stream(10, 11)).toList shouldEqual List(1, 2, 3, 4, 5, 10, 11)
+    sut.flatMap(i => Stream(i * 3)).toList shouldEqual List(3, 6, 9, 12, 15)
   }
 
 
