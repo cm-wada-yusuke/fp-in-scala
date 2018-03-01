@@ -73,6 +73,34 @@ trait Stream[+A] {
   def flatMap[B](f: (A => Stream[B])): Stream[B] =
     foldRight(Stream.empty[B])(f(_).append(_))
 
+  def find(p: A => Boolean): Option[A] =
+    filter(p).headOption
+
+  // ex 5.13
+  def unfoldMap[B](f: (A => B)): Stream[B] =
+    Stream.unfold(this)((s: Stream[A]) => s.headOption.map(a => (f(a), s.drop(1))))
+
+  // もうちょっとスートにかけそうなんだけど…
+  def unfoldTake(n: Int): Stream[A] =
+    Stream.unfold((this, n))(s => if (s._2 <= 0) None else s._1.headOption.map(a => (a, (s._1.drop(1), s._2 - 1))))
+
+  def unfoldTakeWhile(p: A => Boolean): Stream[A] =
+    Stream.unfold(this)(s => s.headOption.flatMap(a => if (p(a)) Some(a, s.drop(1)) else None))
+
+  def zipWith[X >: A](s2: Stream[X])(f: (X, X) => X): Stream[X] =
+    Stream.unfold((this, s2))(s => (s._1.headOption, s._2.headOption) match {
+      case (Some(a1), Some(a2)) => Some((f(a1, a2), (s._1.drop(1), s._2.drop(1))))
+      case _ => None
+    })
+
+  // Empty に対して drop してもエラーが起きずに そのまま Empty が返ってくるという前提
+  def zipAll[B](s2: Stream[B]): Stream[(Option[A], Option[B])] =
+    Stream.unfold((this, s2))(s => (s._1.headOption, s._2.headOption) match {
+      case (None, None) => None
+      case (op1, op2) => Some((op1, op2), (s._1.drop(1), s._2.drop(1)))
+    })
+
+
 }
 
 case object Empty extends Stream[Nothing]
@@ -94,6 +122,43 @@ object Stream {
   def apply[A](as: A*): Stream[A] =
     if (as.isEmpty) empty
     else cons(as.head, apply(as.tail: _*))
+
+
+  // ex 5.8
+  def constant[A](a: A): Stream[A] =
+    Stream.cons(a, constant(a))
+
+  // ex 5.9
+  def from(n: Int): Stream[Int] =
+    Stream.cons(n, from(n + 1))
+
+  // ex 5.10
+  def fibs: Stream[Int] = {
+    def fib(prev: Int, next: Int): Stream[Int] =
+      Stream.cons(prev, fib(next, prev + next))
+
+    fib(0, 1)
+  }
+
+  // ex 5.11
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+    f(z) match {
+      case Some((a, s)) => Stream.cons(a, unfold(s)(f))
+      case _ => Stream.empty[A]
+    }
+
+  // ex 5.12
+  def unfoldFibs: Stream[Int] =
+    unfold((0, 1))(pn => Some(pn._1, (pn._2, pn._1 + pn._2)))
+
+  def unfoldFrom(n: Int): Stream[Int] =
+    unfold(n)(i => Some(i, i + 1))
+
+  def unfoldConstant(n: Int): Stream[Int] =
+    unfold(n)(i => Some(i, i))
+
+  def unfoldOnes: Stream[Int] =
+    unfold(1)(_ => Some(1, 1))
 
 }
 
