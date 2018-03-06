@@ -100,6 +100,35 @@ trait Stream[+A] {
       case (op1, op2) => Some((op1, op2), (s._1.drop(1), s._2.drop(1)))
     })
 
+  // EX5.14
+  // 検査対象のほうが短い分にはOK
+  // あとは this が無限ストリームでも成立するかどうかがポイント？
+  // ↓これだと無限ストリームに対応できなそう
+  //  def startsWith[A](s: Stream[A]): Boolean =
+  //    this.zipAll(s).forAll {
+  //      case (Some(a1), Some(a2)) if a1 == a2 => true
+  //      case (Some(_), None) => true
+  //      case _ => false
+  //    }
+
+  // これいけるのでは
+  // まずは zipAll その後 s 側の要素数 分だけ takeWhile
+  // その後 残った Stream に対して要素同士を比較
+  // this のほうが短かったりしたら自然とfalseになるよね
+  // takeWhile してるから無限ストリームにも対応
+  // 効率は知らん
+  def startsWith[A](s: Stream[A]): Boolean =
+    this.zipAll(s).takeWhile {
+      case (_, Some(_)) => true
+      case _ => false
+    }.forAll {
+      case (Some(a1), Some(a2)) if a1 == a2 => true
+      case _ => false
+    }
+
+  // ex515
+  def tails: Stream[Stream[A]] =
+    Stream.unfold(this)(s => s.headOption.map(_ => (s, s.drop(1))))
 
 }
 
