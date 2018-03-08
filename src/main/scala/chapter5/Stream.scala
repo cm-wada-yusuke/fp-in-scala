@@ -130,6 +130,19 @@ trait Stream[+A] {
   def tails: Stream[Stream[A]] =
     Stream.unfold(this)(s => s.headOption.map(_ => (s, s.drop(1))))
 
+
+  // ex516
+  // def tails = this.scanRight(this)(_)
+  // まずシグネチャが合ってるか自信がない
+  def scanRight[B](z: B)(f: (A, => B) => B): Stream[B] =
+    Stream.unfold(this) {
+      case s@Cons(_, t) => Some((s.foldRight(z)(f), t()))
+      case Empty => None
+    }.append(Stream(z))
+
+  //  sa.headOption.map(_ => (sa.foldRight(z)(f), sa.drop(1))))
+
+
 }
 
 case object Empty extends Stream[Nothing]

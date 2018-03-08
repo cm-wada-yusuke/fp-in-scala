@@ -98,7 +98,7 @@ class Chapter5Test extends FlatSpec with Matchers {
     val sut3 = Stream(1, 2, 3)
 
     val target = Stream(1, 2, 3, 4)
-    val target2 = Stream(2, 3, 4, 5, 6)√
+    val target2 = Stream(2, 3, 4, 5, 6)
 
     sut.startsWith(target) shouldBe true
     sut2.startsWith(target) shouldBe true
@@ -111,6 +111,12 @@ class Chapter5Test extends FlatSpec with Matchers {
     val sut = Stream(1, 2, 3)
 
     sut.tails.map(_.toList).toList shouldEqual List(List(1, 2, 3), List(2, 3), List(3))
+  }
+
+  "ex516" should "output" in {
+    val sut = Stream(1, 2, 3)
+
+    sut.scanRight(0)(_ + _).toList shouldEqual List(6, 5, 3, 0)
   }
 
 }
