@@ -110,7 +110,8 @@ class Chapter5Test extends FlatSpec with Matchers {
   "ex515" should "output" in {
     val sut = Stream(1, 2, 3)
 
-    sut.tails.map(_.toList).toList shouldEqual List(List(1, 2, 3), List(2, 3), List(3))
+    Stream().toList shouldEqual List()
+    sut.tails.map(_.toList).toList shouldEqual List(List(1, 2, 3), List(2, 3), List(3), List())
   }
 
   "ex516" should "output" in {
