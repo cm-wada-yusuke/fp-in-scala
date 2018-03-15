@@ -51,7 +51,15 @@ class Chapter6Test extends FlatSpec with Matchers {
 
     ns shouldEqual List(769497, 1988230381, 869912163, 319775261, 962104480)
 
+  }
 
+  "ex67" should "output" in {
+    import EXRNG._
+    val sut = List(unit(1), unit(2), unit(3))
+    val simple = new SimpleRNG(2)
+
+
+    sequence(sut)(simple)._1 shouldEqual List(1, 2, 3)
   }
 
 }
