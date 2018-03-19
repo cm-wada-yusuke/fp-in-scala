@@ -40,6 +40,7 @@ class Chapter6Test extends FlatSpec with Matchers {
 
     (n, n2, n3) shouldEqual(769497, 1988230381, -1277571485)
     List(nn, nn2, nn3).map(_ * 10000).map(_.toInt) shouldEqual List(3, 9258, 4050)
+    n should (be >= 0 and be <= Int.MaxValue)
 
   }
 

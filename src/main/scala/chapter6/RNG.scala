@@ -22,12 +22,14 @@ object EXRNG {
   def nonNegativeInt(rng: RNG): (Int, RNG) = {
     val (i, r) = rng.nextInt
     (i & Int.MaxValue, r) // 最上位ビット反転 = 符号反転
+    // 1xxxxx & 01111111111111111111111111111
+    // だめです　0xxxxx ^ 10000000000000000000000000000
   }
 
   // EX 6.2
   def double(rng: RNG): (Double, RNG) = {
     val (i, r) = nonNegativeInt(rng)
-    (i.toDouble / Int.MaxValue, r)
+    (i / (Int.MaxValue.toDouble + 1), r)
   }
 
 
@@ -99,4 +101,28 @@ object EXRNG {
   // はい気持ち良い〜
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
     fs.foldLeft(unit(List.empty[A]))(map2(_, _)(_ :+ _))
+
+  // INT.MAXが法で割り切れるならば等分できるのでランダム値がどこに来ても採用される確率は同じになる
+  // 割り切れない時、INT.MAX から 法の最大倍数の間 に発生したランダム値は確率をゆがめる要因なので無視したい
+  //
+  // ランダム値から n 分だけ先に進めると マイナスになる ( i + n )
+  // そこから ランダム値をn で割ったあまり mod だけ戻す - mod
+  // この操作で INT.MAX に戻りきらず 負の値になる ならば ランダム値nが INT.MAX から 法の最大倍数の間にある
+  def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
+    val (i, rng2) = nonNegativeInt(rng)
+    val mod = i % n
+    if (i + (n-1) - mod >= 0) (mod, rng2) else nonNegativeLessThan(n)(rng) // rng2 じゃないのこれ渡すの？
+  }
+
+  // EX6.8
+  def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] =  { rng =>
+    val (a, rng2) = f(rng)
+    g(a)(rng)
+  }
+
+  def nonNegativeLessThanByFlatMap(n: Int): Rand[Int] = flatMap(nonNegativeInt){
+    i => rng =>
+      val mod = i % n
+      if (i + (n-1) - mod >= 0) (mod, rng) else nonNegativeLessThanByFlatMap(n)(rng)
+  }
 }
