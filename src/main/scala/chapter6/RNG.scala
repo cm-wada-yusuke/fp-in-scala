@@ -37,16 +37,21 @@ object EXRNG {
   // RNGを伝搬させるのか、同じRNGを使いまわすのか迷った
   // 後続の関数と差を出すには伝搬させるのが妥当だろうという判断
   def intDouble(rng: RNG): ((Int, Double), RNG) = {
-    val (i, ir) = nonNegativeInt(rng)
+    val (i, ir) = rng.nextInt
     val (d, dr) = double(ir)
     ((i, d), dr)
   }
 
   def doubleInt(rng: RNG): ((Double, Int), RNG) = {
     val (d, dr) = double(rng)
-    val (i, ir) = nonNegativeInt(dr)
+    val (i, ir) = dr.nextInt
 
     ((d, i), ir)
+  }
+
+  def doubleInt2(rng: RNG): ((Double, Int), RNG) = {
+    val ((i, d), r) = intDouble(rng)
+    ((d, i), r)
   }
 
   def double3(rng: RNG): ((Double, Double, Double), RNG) = {
@@ -61,7 +66,7 @@ object EXRNG {
   def ints(count: Int)(rng: RNG): (List[Int], RNG) =
     List.fill(count)(0).foldLeft((List.empty[Int], rng)) {
       case ((list, tr), _) =>
-        val (ni, nr) = nonNegativeInt(tr)
+        val (ni, nr) = tr.nextInt
         (list :+ ni, nr)
     }
 
@@ -111,18 +116,35 @@ object EXRNG {
   def nonNegativeLessThan(n: Int): Rand[Int] = { rng =>
     val (i, rng2) = nonNegativeInt(rng)
     val mod = i % n
-    if (i + (n-1) - mod >= 0) (mod, rng2) else nonNegativeLessThan(n)(rng) // rng2 じゃないのこれ渡すの？
+    if (i + (n - 1) - mod >= 0) (mod, rng2) else nonNegativeLessThan(n)(rng) // rng2 じゃないのこれ渡すの？
   }
 
   // EX6.8
-  def flatMap[A,B](f: Rand[A])(g: A => Rand[B]): Rand[B] =  { rng =>
+  def flatMap[A, B](f: Rand[A])(g: A => Rand[B]): Rand[B] = { rng =>
     val (a, rng2) = f(rng)
-    g(a)(rng)
+    g(a)(rng2)
   }
 
-  def nonNegativeLessThanByFlatMap(n: Int): Rand[Int] = flatMap(nonNegativeInt){
-    i => rng =>
-      val mod = i % n
-      if (i + (n-1) - mod >= 0) (mod, rng) else nonNegativeLessThanByFlatMap(n)(rng)
+  def nonNegativeLessThanByFlatMap(n: Int): Rand[Int] = flatMap(nonNegativeInt) {
+    i =>
+      rng =>
+        val mod = i % n
+        if (i + (n - 1) - mod >= 0) (mod, rng) else nonNegativeLessThanByFlatMap(n)(rng)
   }
+
+  // EX6.9
+  def mapByFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] =
+    flatMap(s) { a => rng => (f(a), rng) }
+
+  def map2ByFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
+    flatMap(ra) { a =>
+      flatMap(rb) { b =>
+        rng =>
+          (f(a, b), rng)
+      }
+    }
+
+
+
+
 }
