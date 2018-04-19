@@ -70,11 +70,12 @@ object VM {
   // 4. あとはsequenceの中身。sequenceの引数型に合わせる必要があるため、引数は List[State[Machine,なんでも良い]] とする必要がある。
   // 4-1. ということで inputs.map は確定。 Input => State[Machine,Unit] としたい。
   // 4-2. 何もないところから State を作る方法… get か set か modify。
-  // 4-3. Input => set(doSomething(i)) でいける？
+  // 4-3. Input => set(doSomething(i):Machine) でいける？
   // 4-4. できない。 Input を受け取って何をするかというと、「Machine をつくる」 ではなくて 「Machine を変化させる」 だから。
   // 4-5. つまり doSomething は Input => (Machine => Machine) というシグネチャになる。
   // 4-6. (Machine => Machine) から State は作れるか？ 作れる。 def modify[S](f: S => S): State[S, Unit] ここで勝利を確信する。
-  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = for {
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] =
+    for {
     _ <- sequence(inputs.map((i: Input) => modify[Machine](operation(i))))
     s <- get
   } yield (s.coins, s.candies)

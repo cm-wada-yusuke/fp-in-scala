@@ -36,7 +36,7 @@ object State {
 
   def unit[S, A](a: A): State[S, A] = State((s: S) => (a, s))
 
-  // コンパニオンオブジェクトに書いたら Rand みたいにきれいにかけるかも
+  // コンパニオンオブジェクトに書いたら Rand みたいにきれいにかけるかも。そうした。
   def sequence[S, A](fs: List[State[S, A]]): State[S, List[A]] =
     fs.foldLeft(unit(List.empty): State[S, List[A]]) { (bcc, sa) =>
       bcc.map2(sa)(_ :+ _)

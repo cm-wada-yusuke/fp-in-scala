@@ -134,13 +134,12 @@ object EXRNG {
 
   // EX6.9
   def mapByFlatMap[A, B](s: Rand[A])(f: A => B): Rand[B] =
-    flatMap(s) { a => rng => (f(a), rng) }
+    flatMap(s) { a => unit(f(a)) }
 
   def map2ByFlatMap[A, B, C](ra: Rand[A], rb: Rand[B])(f: (A, B) => C): Rand[C] =
     flatMap(ra) { a =>
       flatMap(rb) { b =>
-        rng =>
-          (f(a, b), rng)
+          unit(f(a, b))
       }
     }
 
